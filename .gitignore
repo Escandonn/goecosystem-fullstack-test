@@ -1,0 +1,29 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# SQLite
+*.db
+
+# Environment
+.env
+
+# Node
+node_modules/
+
+# Astro
+dist/
+
+# VSCode
+.vscode/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Excel temporal
+~$*.xlsx
