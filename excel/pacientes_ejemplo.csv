@@ -1,0 +1,11 @@
+TipoDocumento,NumeroDocumento,Nombres,Apellidos,FechaNacimiento,Sexo,Telefono,Correo,Direccion,Estado
+CC,1001234567,JUAN CARLOS,PEREZ GOMEZ,1985-03-15,M,3001234567,juan.perez@email.com,Cra 1 #2-3 Bogota,True
+CC,1007654321,MARIA ELENA,RODRIGUEZ LOPEZ,1990-07-22,F,3009876543,maria.rodriguez@email.com,Calle 5 #10-15 Medellin,True
+CC,1012345678,CARLOS ANDRES,GOMEZ VARGAS,1978-11-30,M,3012345678,carlos.gomez@email.com,Av Caracas #45-67 Cali,True
+CE,1023456789,ANA LUCIA,MARTINEZ SANCHEZ,1995-01-10,F,3023456789,ana.martinez@email.com,Transversal 7 #23-89 Bogota,True
+CC,1034567890,PEDRO JOSE,DIAZ RAMIREZ,1982-09-05,M,3034567890,pedro.diaz@email.com,Calle 12 #8-45 Bucaramanga,True
+TI,1045678901,LAURA FERNANDA,CASTRO MORENO,2005-04-18,F,3045678901,laura.castro@email.com,Cra 15 #3-67 Cartagena,True
+CC,1056789012,JORGE ENRIQUE,LOPEZ GUERRA,1970-12-25,M,3056789012,jorge.lopez@email.com,Av Boyaca #56-23 Barranquilla,True
+CC,1067890123,PATRICIA DEL PILAR,VEGA HERRERA,1988-06-08,F,3067890123,patricia.vega@email.com,Calle 80 #15-90 Bogota,True
+CC,1078901234,ALEJANDRO JOSE,MENDOZA TORRES,1992-02-14,M,3078901234,alejandro.mendoza@email.com,Av 80 #45-12 Medellin,False
+CC,1089012345,CLAUDIA PATRICIA,ORTIZ RAMOS,1975-08-30,F,3089012345,claudia.ortiz@email.com,Calle 100 #20-45 Bogota,True

@@ -1,10 +1,11 @@
 """Rutas de la API para la entidad Paciente."""
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from sqlalchemy.orm import Session
 
 from database.session import get_db
 from schemas.patient import PatientCreate, PatientResponse, PatientUpdate
+from schemas.import_result import ImportResult
 from services.patient_service import PatientService
 
 router = APIRouter(prefix="/pacientes", tags=["Pacientes"])
@@ -67,3 +68,35 @@ def delete_paciente(patient_id: int, db: Session = Depends(get_db)):
     service = PatientService(db)
     service.delete(patient_id)
     return None
+
+
+@router.post("/importar", response_model=ImportResult, status_code=status.HTTP_200_OK)
+def importar_pacientes(
+    file: UploadFile = File(..., description="Archivo Excel (.xlsx) con los pacientes a importar"),
+    db: Session = Depends(get_db),
+):
+    """
+    Importa pacientes desde un archivo Excel.
+    
+    El archivo Excel debe contener las siguientes columnas:
+    - **TipoDocumento**: Tipo de documento (CC, CE, TI, etc.)
+    - **NumeroDocumento**: Número de documento (único)
+    - **Nombres**: Nombres del paciente
+    - **Apellidos**: Apellidos del paciente
+    - **FechaNacimiento**: Fecha de nacimiento (YYYY-MM-DD)
+    - **Sexo**: Sexo (M, F, Otro)
+    
+    Columnas opcionales:
+    - **Telefono**: Número de teléfono
+    - **Correo**: Correo electrónico
+    - **Direccion**: Dirección de residencia
+    - **Estado**: Estado del paciente (True/False, por defecto True)
+    
+    Retorna un resumen con:
+    - Total de registros procesados
+    - Pacientes insertados exitosamente
+    - Documentos duplicados (ya existen)
+    - Errores encontrados con detalles
+    """
+    service = PatientService(db)
+    return service.import_from_excel(file)
