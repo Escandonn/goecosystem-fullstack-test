@@ -30,11 +30,24 @@ class PatientBase(BaseModel):
 
     @field_validator("estado")
     @classmethod
-    def validate_estado(cls, v: str) -> str:
-        v = v.strip().capitalize()
-        if v not in ("Activo", "Inactivo"):
-            raise ValueError("El estado debe ser 'Activo' o 'Inactivo'")
-        return v
+    def validate_estado(cls, v) -> str:
+        # Handle boolean from database (1, 0, True, False, '1', '0')
+        if isinstance(v, bool):
+            return "Activo" if v else "Inactivo"
+        if isinstance(v, (int, float)):
+            return "Activo" if v else "Inactivo"
+        # Handle string representations of boolean
+        if isinstance(v, str):
+            v_stripped = v.strip()
+            if v_stripped in ("1", "True", "true", "T", "t"):
+                return "Activo"
+            if v_stripped in ("0", "False", "false", "F", "f"):
+                return "Inactivo"
+            # Normalize string
+            v_stripped = v_stripped.capitalize()
+            if v_stripped in ("Activo", "Inactivo"):
+                return v_stripped
+        raise ValueError("El estado debe ser 'Activo' o 'Inactivo'")
 
 
 class PatientCreate(PatientBase):
@@ -72,10 +85,23 @@ class PatientUpdate(BaseModel):
     def validate_estado(cls, v):
         if v is None:
             return v
-        v = v.strip().capitalize()
-        if v not in ("Activo", "Inactivo"):
-            raise ValueError("El estado debe ser 'Activo' o 'Inactivo'")
-        return v
+        # Handle boolean from database (1, 0, True, False, '1', '0')
+        if isinstance(v, bool):
+            return "Activo" if v else "Inactivo"
+        if isinstance(v, (int, float)):
+            return "Activo" if v else "Inactivo"
+        # Handle string representations of boolean
+        if isinstance(v, str):
+            v_stripped = v.strip()
+            if v_stripped in ("1", "True", "true", "T", "t"):
+                return "Activo"
+            if v_stripped in ("0", "False", "false", "F", "f"):
+                return "Inactivo"
+            # Normalize string
+            v_stripped = v_stripped.capitalize()
+            if v_stripped in ("Activo", "Inactivo"):
+                return v_stripped
+        raise ValueError("El estado debe ser 'Activo' o 'Inactivo'")
 
 
 class PatientResponse(PatientBase):

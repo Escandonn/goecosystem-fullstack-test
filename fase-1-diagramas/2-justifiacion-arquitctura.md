@@ -1,4 +1,3 @@
-Me parece una excelente estrategia. En una prueba técnica, **la arquitectura y la justificación de las decisiones** suelen tener tanto peso como el código. Si explicas bien el porqué de cada decisión, demuestras criterio técnico además de conocimientos.
 
 ---
 
