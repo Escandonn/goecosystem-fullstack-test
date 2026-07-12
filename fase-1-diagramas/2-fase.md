@@ -1,4 +1,3 @@
-Estoy de acuerdo con ese enfoque. La **Fase 2** no debería ser empezar a programar el CRUD inmediatamente, sino **diseñar correctamente el dominio del problema**. En una prueba técnica, un buen modelo de datos y una estructura sólida suelen dar una muy buena impresión.
 
 ---
 
