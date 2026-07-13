@@ -5,6 +5,11 @@ pydantic==2.13.4
 pydantic[email]==2.13.4
 python-dotenv==1.2.2
 email-validator==2.3.0
+# Dependencias para Fase 3.6 (Autenticación JWT + RBAC)
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt>=4.0.1,<4.1
+python-multipart==0.0.20
 # Dependencias para Fase 3 (Excel) - instalar cuando sea necesario:
 # pandas
 # openpyxl

@@ -2,17 +2,25 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer
 
 from core.config import settings
 from core.exceptions import register_exception_handlers
 from core.logging import setup_logging, get_logger
 from core.middleware import RequestTimingMiddleware
 from database.init_db import init_db
-from routes import health, patient
+from routes import auth, health, patient, user
 
 # ── Inicializar logging ─────────────────────────────────────────
 setup_logging()
 logger = get_logger("main")
+
+# ── Esquema de seguridad OAuth2 JWT para Swagger ────────────────
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl=f"{settings.API_V1_PREFIX}/auth/login",
+    scheme_name="JWT",
+    description="Introduce tu username y password para obtener un token JWT.",
+)
 
 # ── Crear la aplicación FastAPI ──────────────────────────────────
 app = FastAPI(
@@ -34,12 +42,20 @@ app = FastAPI(
             "description": "Endpoints de verificación de salud de la API.",
         },
         {
+            "name": "Auth",
+            "description": "Autenticación y gestión de tokens JWT.",
+        },
+        {
             "name": "Pacientes",
-            "description": "Operaciones CRUD para gestión de pacientes.",
+            "description": "Operaciones CRUD para gestión de pacientes (requiere autenticación).",
+        },
+        {
+            "name": "Usuarios",
+            "description": "Gestión de usuarios del sistema (requiere rol admin).",
         },
         {
             "name": "Importación",
-            "description": "Importación masiva de pacientes desde archivos Excel.",
+            "description": "Importación masiva de pacientes desde archivos Excel (requiere rol admin).",
         },
     ],
 )
@@ -66,6 +82,8 @@ logger.info("Base de datos inicializada | url=%s", settings.DATABASE_URL)
 
 # ── Registrar rutas ─────────────────────────────────────────────
 app.include_router(health.router)
+app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
+app.include_router(user.router, prefix=settings.API_V1_PREFIX)
 app.include_router(patient.router, prefix=settings.API_V1_PREFIX)
 logger.info("Rutas registradas | prefix=%s", settings.API_V1_PREFIX)
 

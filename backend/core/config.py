@@ -38,6 +38,18 @@ class Settings:
     # ── Logging ─────────────────────────────────────────────────
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
 
+    # ── JWT / Autenticación ─────────────────────────────────────
+    JWT_SECRET_KEY: str = os.getenv(
+        "JWT_SECRET_KEY",
+        "goecosystem-super-secret-key-change-in-production-2025",
+    )
+    JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
+    JWT_EXPIRE_MINUTES: int = int(os.getenv("JWT_EXPIRE_MINUTES", "60"))
+
+    # ── Usuario administrador inicial ───────────────────────────
+    ADMIN_USERNAME: str = os.getenv("ADMIN_USERNAME", "admin")
+    ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "Admin123*")
+
     # ── Metadatos para Swagger ──────────────────────────────────
     APP_DESCRIPTION: str = (
         "Sistema de administración de pacientes para GoEcosystem Digital Health.\n\n"

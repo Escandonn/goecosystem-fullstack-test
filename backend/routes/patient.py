@@ -3,7 +3,9 @@
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from sqlalchemy.orm import Session
 
+from auth.dependencies import get_current_user, require_admin
 from database.session import get_db
+from models.user import User
 from schemas.patient import PatientCreate, PatientResponse, PatientUpdate
 from schemas.import_result import ImportResult
 from services.patient_service import PatientService
@@ -18,6 +20,7 @@ def list_pacientes(
     skip: int = Query(0, ge=0, description="Número de registros a omitir para paginación"),
     limit: int = Query(100, ge=1, le=500, description="Número máximo de registros a retornar"),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Obtiene la lista de todos los pacientes."""
     service = PatientService(db)
@@ -32,6 +35,7 @@ def search_pacientes(
     skip: int = Query(0, ge=0, description="Registros a omitir"),
     limit: int = Query(100, ge=1, le=500, description="Máximo de registros"),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Busca pacientes por nombre, apellido o número de documento."""
     service = PatientService(db)
@@ -41,7 +45,10 @@ def search_pacientes(
 @router.get("/count", tags=["Pacientes"],
          summary="Contar pacientes",
          description="Retorna el número total de pacientes registrados en la base de datos.")
-def count_pacientes(db: Session = Depends(get_db)):
+def count_pacientes(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """Cuenta el total de pacientes registrados."""
     service = PatientService(db)
     return {"total": service.count()}
@@ -51,7 +58,11 @@ def count_pacientes(db: Session = Depends(get_db)):
          summary="Obtener paciente por ID",
          description="Obtiene un paciente específico por su identificador único.",
          responses={404: {"description": "Paciente no encontrado"}})
-def get_paciente(patient_id: int, db: Session = Depends(get_db)):
+def get_paciente(
+    patient_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """Obtiene un paciente por su ID."""
     service = PatientService(db)
     return service.get_by_id(patient_id)
@@ -62,7 +73,11 @@ def get_paciente(patient_id: int, db: Session = Depends(get_db)):
                summary="Crear nuevo paciente",
                description="Crea un nuevo paciente en el sistema. El número de documento debe ser único.",
                responses={409: {"description": "Ya existe un paciente con ese número de documento"}})
-def create_paciente(patient: PatientCreate, db: Session = Depends(get_db)):
+def create_paciente(
+    patient: PatientCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """Crea un nuevo paciente."""
     service = PatientService(db)
     return service.create(patient)
@@ -73,7 +88,12 @@ def create_paciente(patient: PatientCreate, db: Session = Depends(get_db)):
                description="Actualiza los datos de un paciente existente. Solo se modifican los campos enviados.",
                responses={404: {"description": "Paciente no encontrado"},
                           409: {"description": "Conflicto con número de documento"}})
-def update_paciente(patient_id: int, patient: PatientUpdate, db: Session = Depends(get_db)):
+def update_paciente(
+    patient_id: int,
+    patient: PatientUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """Actualiza un paciente existente."""
     service = PatientService(db)
     return service.update(patient_id, patient)
@@ -81,10 +101,15 @@ def update_paciente(patient_id: int, patient: PatientUpdate, db: Session = Depen
 
 @router.delete("/{patient_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Pacientes"],
                summary="Eliminar paciente",
-               description="Elimina permanentemente un paciente por su ID.",
-               responses={404: {"description": "Paciente no encontrado"}})
-def delete_paciente(patient_id: int, db: Session = Depends(get_db)):
-    """Elimina un paciente por su ID."""
+               description="Elimina permanentemente un paciente por su ID. **Requiere rol admin.**",
+               responses={404: {"description": "Paciente no encontrado"},
+                          403: {"description": "Acceso prohibido"}})
+def delete_paciente(
+    patient_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    """Elimina un paciente por su ID (solo admin)."""
     service = PatientService(db)
     service.delete(patient_id)
     return None
@@ -93,10 +118,11 @@ def delete_paciente(patient_id: int, db: Session = Depends(get_db)):
 @router.post("/importar", response_model=ImportResult, status_code=status.HTTP_200_OK,
                 tags=["Importación"],
                 summary="Importar pacientes desde Excel",
-                description="Sube un archivo Excel (.xlsx) e importa pacientes masivamente.")
+                description="Sube un archivo Excel (.xlsx) e importa pacientes masivamente. **Requiere rol admin.**")
 def importar_pacientes(
     file: UploadFile = File(..., description="Archivo Excel (.xlsx) con los pacientes a importar"),
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
 ):
     """
     Importa pacientes desde un archivo Excel.
