@@ -1,0 +1,149 @@
+---
+import "../../styles/global.css";
+---
+
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestión de Usuarios — GoEcosystem Admin</title>
+    <meta name="description" content="Panel de administración de usuarios del sistema GoEcosystem." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      :root {
+        --bg: #0f1117; --surface: #1a1d27; --surface2: #222636;
+        --border: #2e3250; --accent: #22c55e; --accent-light: #4ade80;
+        --accent-dim: rgba(34,197,94,0.12); --text: #e2e8f0;
+        --text-muted: #8892a4; --text-faint: #4a5568; --radius: 12px; --radius-sm: 8px;
+      }
+      html { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+      body { min-height: 100vh; }
+      nav {
+        position: sticky; top: 0; z-index: 50;
+        background: rgba(26,29,39,0.85); backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-inner {
+        max-width: 1280px; margin: 0 auto; padding: 0 24px;
+        height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      }
+      .nav-brand { display: flex; align-items: center; gap: 10px; }
+      .nav-logo {
+        width: 36px; height: 36px; border-radius: 10px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 0 16px rgba(99,102,241,0.4);
+      }
+      .nav-logo svg { width: 18px; height: 18px; color: #fff; }
+      .nav-title { font-weight: 700; font-size: 1rem; }
+      .nav-badge {
+        padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: 700;
+        background: rgba(99,102,241,0.15); color: #818cf8;
+        border: 1px solid #6366f1; letter-spacing: 0.05em; text-transform: uppercase;
+      }
+      .nav-right { display: flex; align-items: center; gap: 8px; }
+      .nav-link {
+        display: flex; align-items: center; gap: 6px;
+        padding: 6px 12px; border-radius: var(--radius-sm);
+        font-size: 0.8rem; font-weight: 500; color: var(--text-muted);
+        text-decoration: none; border: none; background: none; cursor: pointer; transition: all 0.2s;
+      }
+      .nav-link:hover { color: var(--text); background: var(--surface2); }
+      .nav-link.active { color: var(--accent-light); background: var(--accent-dim); }
+      .btn-logout {
+        display: flex; align-items: center; gap: 6px;
+        padding: 6px 14px; border-radius: var(--radius-sm);
+        font-size: 0.8rem; font-weight: 500; color: var(--text-muted);
+        background: none; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s;
+      }
+      .btn-logout:hover { color: #ef4444; border-color: #ef4444; background: rgba(239,68,68,0.1); }
+      main { max-width: 1280px; margin: 0 auto; padding: 80px 24px; display: flex; align-items: center; justify-content: center; }
+      .wip-card {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 20px; padding: 60px 48px; text-align: center;
+        display: flex; flex-direction: column; align-items: center; gap: 16px;
+        max-width: 480px; width: 100%;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+      }
+      .wip-icon {
+        width: 80px; height: 80px; border-radius: 50%;
+        background: var(--accent-dim); border: 1px solid rgba(34,197,94,0.25);
+        display: flex; align-items: center; justify-content: center;
+      }
+      .wip-icon svg { width: 40px; height: 40px; color: var(--accent-light); }
+      .wip-card h1 { font-size: 1.4rem; font-weight: 800; color: var(--text); }
+      .wip-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; }
+      .wip-pill {
+        padding: 4px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+        background: rgba(245,158,11,0.12); color: #fbbf24;
+        border: 1px solid rgba(245,158,11,0.3);
+        letter-spacing: 0.06em; text-transform: uppercase;
+      }
+      .btn-back {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 10px 20px; border-radius: var(--radius-sm);
+        background: var(--accent-dim); color: var(--accent-light);
+        border: 1px solid rgba(34,197,94,0.3);
+        font-size: 0.875rem; font-weight: 600; text-decoration: none;
+        transition: all 0.2s; margin-top: 8px;
+      }
+      .btn-back:hover { background: var(--accent); color: #0f2318; }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-inner">
+        <div class="nav-brand">
+          <div class="nav-logo">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+          <span class="nav-title">GoEcosystem</span>
+          <span class="nav-badge">Admin</span>
+        </div>
+        <div class="nav-right">
+          <a href="/admin/dashboard" class="nav-link">Dashboard</a>
+          <a href="/admin/pacientes" class="nav-link">Pacientes</a>
+          <a href="/admin/usuarios" class="nav-link active">Usuarios</a>
+          <button id="logout-btn" class="btn-logout">Salir</button>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+      <div class="wip-card">
+        <div class="wip-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+        </div>
+        <span class="wip-pill">En construcción</span>
+        <h1>Gestión de Usuarios</h1>
+        <p>
+          El módulo de administración de usuarios del sistema estará disponible
+          próximamente. Aquí podrás crear, editar y gestionar las cuentas de
+          trabajadores y administradores.
+        </p>
+        <a href="/admin/dashboard" class="btn-back">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:16px;height:16px">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Volver al Dashboard
+        </a>
+      </div>
+    </main>
+
+    <script>
+      import { getUser, logout } from "../../utils/auth";
+      const user = getUser();
+      if (!user) { window.location.href = "/login"; }
+      document.getElementById("logout-btn")?.addEventListener("click", logout);
+    </script>
+  </body>
+</html>

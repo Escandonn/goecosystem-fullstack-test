@@ -1,0 +1,752 @@
+---
+import "../../styles/global.css";
+---
+
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestión de Pacientes — GoEcosystem Admin</title>
+    <meta name="description" content="Panel de administración para gestionar pacientes del sistema GoEcosystem." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      :root {
+        --bg: #0f1117;
+        --surface: #1a1d27;
+        --surface2: #222636;
+        --border: #2e3250;
+        --border-hover: #4a5080;
+        --accent: #6366f1;
+        --accent-light: #818cf8;
+        --accent-dim: rgba(99,102,241,0.15);
+        --danger: #ef4444;
+        --danger-dim: rgba(239,68,68,0.15);
+        --success: #22c55e;
+        --success-dim: rgba(34,197,94,0.12);
+        --warning: #f59e0b;
+        --warning-dim: rgba(245,158,11,0.12);
+        --info: #38bdf8;
+        --text: #e2e8f0;
+        --text-muted: #8892a4;
+        --text-faint: #4a5568;
+        --radius: 12px;
+        --radius-sm: 8px;
+        --shadow: 0 4px 24px rgba(0,0,0,0.4);
+        --shadow-lg: 0 8px 40px rgba(0,0,0,0.6);
+      }
+      html { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+      body { min-height: 100vh; }
+
+      /* NAV */
+      nav {
+        position: sticky; top: 0; z-index: 50;
+        background: rgba(26,29,39,0.88); backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-inner { max-width:1400px; margin:0 auto; padding:0 24px; height:60px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+      .nav-brand { display:flex; align-items:center; gap:10px; }
+      .nav-logo {
+        width:36px; height:36px; border-radius:10px;
+        background:linear-gradient(135deg, var(--accent),#8b5cf6);
+        display:flex; align-items:center; justify-content:center;
+        box-shadow: 0 0 16px rgba(99,102,241,0.4);
+      }
+      .nav-logo svg { width:18px; height:18px; color:#fff; }
+      .nav-title { font-weight:700; font-size:1rem; color:var(--text); }
+      .nav-badge { padding:2px 8px; border-radius:20px; font-size:.65rem; font-weight:700; background:var(--accent-dim); color:var(--accent-light); border:1px solid var(--accent); letter-spacing:.05em; text-transform:uppercase; }
+      .nav-right { display:flex; align-items:center; gap:6px; }
+      .nav-link { display:flex; align-items:center; gap:6px; padding:6px 12px; border-radius:var(--radius-sm); font-size:.8rem; font-weight:500; color:var(--text-muted); text-decoration:none; border:none; background:none; cursor:pointer; transition:all .2s; }
+      .nav-link:hover { color:var(--text); background:var(--surface2); }
+      .nav-link.active { color:var(--accent-light); background:var(--accent-dim); }
+      .btn-logout { display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:var(--radius-sm); font-size:.8rem; font-weight:500; color:var(--text-muted); background:none; border:1px solid var(--border); cursor:pointer; transition:all .2s; }
+      .btn-logout:hover { color:var(--danger); border-color:var(--danger); background:var(--danger-dim); }
+
+      /* LAYOUT */
+      main { max-width:1400px; margin:0 auto; padding:28px 24px 60px; }
+
+      /* HEADER */
+      .page-header { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:24px; flex-wrap:wrap; }
+      .page-header h1 { font-size:1.55rem; font-weight:800; color:var(--text); }
+      .page-header p { color:var(--text-muted); font-size:.875rem; margin-top:4px; }
+
+      /* STATS */
+      .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin-bottom:22px; }
+      .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; display:flex; flex-direction:column; gap:4px; transition:border-color .2s,box-shadow .2s; }
+      .stat-card:hover { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent-dim); }
+      .stat-label { font-size:.72rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; }
+      .stat-value { font-size:1.9rem; font-weight:800; color:var(--text); line-height:1; }
+      .stat-sub { font-size:.72rem; color:var(--text-faint); }
+
+      /* TOOLBAR */
+      .toolbar { display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+      .search-wrap { position:relative; flex:1; min-width:220px; }
+      .search-wrap svg { position:absolute; left:11px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--text-faint); pointer-events:none; }
+      #search-input { width:100%; padding:9px 12px 9px 36px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:.875rem; outline:none; transition:border-color .2s,box-shadow .2s; font-family:inherit; }
+      #search-input::placeholder { color:var(--text-faint); }
+      #search-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-dim); }
+
+      /* BUTTONS */
+      .btn { display:inline-flex; align-items:center; gap:7px; padding:9px 18px; border-radius:var(--radius-sm); font-size:.875rem; font-weight:600; cursor:pointer; border:1px solid transparent; outline:none; transition:all .2s; white-space:nowrap; font-family:inherit; }
+      .btn svg { width:15px; height:15px; flex-shrink:0; }
+      .btn-primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+      .btn-primary:hover { background:var(--accent-light); box-shadow:0 0 16px rgba(99,102,241,.4); }
+      .btn-ghost { background:var(--surface2); color:var(--text-muted); border-color:var(--border); }
+      .btn-ghost:hover { color:var(--text); border-color:var(--border-hover); }
+      .btn-danger { background:var(--danger-dim); color:var(--danger); border-color:rgba(239,68,68,.3); }
+      .btn-danger:hover { background:var(--danger); color:#fff; }
+      .btn-sm { padding:5px 10px; font-size:.75rem; gap:4px; }
+      .btn-sm svg { width:13px; height:13px; }
+      .btn:disabled { opacity:.5; cursor:not-allowed; }
+
+      /* TABLE */
+      .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); }
+      .table-scroll { overflow-x:auto; }
+      table { width:100%; border-collapse:collapse; font-size:.855rem; }
+      thead tr { background:var(--surface2); }
+      thead th { padding:11px 14px; text-align:left; font-size:.68rem; font-weight:700; color:var(--text-faint); text-transform:uppercase; letter-spacing:.08em; border-bottom:1px solid var(--border); white-space:nowrap; }
+      tbody tr { border-bottom:1px solid var(--border); transition:background .15s; }
+      tbody tr:last-child { border-bottom:none; }
+      tbody tr:hover { background:var(--surface2); }
+      td { padding:12px 14px; vertical-align:middle; color:var(--text); }
+      td.dim { color:var(--text-muted); font-size:.8rem; }
+
+      .doc-badge { display:inline-flex; align-items:center; padding:2px 7px; border-radius:20px; font-size:.68rem; font-weight:700; background:var(--accent-dim); color:var(--accent-light); border:1px solid rgba(99,102,241,.25); }
+
+      .prioridad-badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:.7rem; font-weight:600; }
+      .prioridad-alta  { background:rgba(239,68,68,.12); color:#f87171; border:1px solid rgba(239,68,68,.25); }
+      .prioridad-media { background:rgba(245,158,11,.12); color:#fbbf24; border:1px solid rgba(245,158,11,.25); }
+      .prioridad-baja  { background:rgba(34,197,94,.12); color:#4ade80; border:1px solid rgba(34,197,94,.25); }
+
+      .estado-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:20px; font-size:.7rem; font-weight:600; }
+      .estado-pendiente  { background:rgba(100,116,139,.15); color:#94a3b8; border:1px solid rgba(100,116,139,.25); }
+      .estado-atencion   { background:rgba(56,189,248,.12); color:#38bdf8; border:1px solid rgba(56,189,248,.25); }
+      .estado-atendido   { background:var(--success-dim); color:var(--success); border:1px solid rgba(34,197,94,.25); }
+      .estado-dot { width:5px; height:5px; border-radius:50%; background:currentColor; flex-shrink:0; }
+
+      .actions-cell { display:flex; gap:5px; }
+
+      /* EMPTY */
+      .empty-state { padding:56px 24px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:10px; }
+      .empty-icon { width:52px; height:52px; color:var(--text-faint); opacity:.5; }
+      .empty-state h3 { font-size:1rem; font-weight:600; color:var(--text-muted); }
+      .empty-state p { font-size:.855rem; color:var(--text-faint); }
+
+      /* PAGINATION */
+      .pagination { display:flex; align-items:center; justify-content:space-between; padding:11px 14px; border-top:1px solid var(--border); background:var(--surface2); font-size:.8rem; color:var(--text-muted); flex-wrap:wrap; gap:8px; }
+      .pagination-btns { display:flex; gap:3px; }
+      .page-btn { padding:4px 11px; border-radius:var(--radius-sm); background:none; border:1px solid var(--border); color:var(--text-muted); font-size:.8rem; cursor:pointer; transition:all .2s; font-family:inherit; }
+      .page-btn:hover:not(:disabled) { border-color:var(--accent); color:var(--accent-light); }
+      .page-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+      .page-btn:disabled { opacity:.4; cursor:not-allowed; }
+
+      /* MODAL */
+      .modal-overlay { display:none; position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.72); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:16px; }
+      .modal-overlay.open { display:flex; }
+      .modal { background:var(--surface); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow-lg); width:100%; max-width:680px; max-height:92vh; display:flex; flex-direction:column; animation:slideUp .25s ease; }
+      @keyframes slideUp { from{opacity:0;transform:translateY(18px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+      .modal-header { display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border); }
+      .modal-header h2 { font-size:1.05rem; font-weight:700; color:var(--text); }
+      .modal-close { width:30px; height:30px; border-radius:var(--radius-sm); background:none; border:1px solid var(--border); color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+      .modal-close:hover { background:var(--danger-dim); color:var(--danger); border-color:rgba(239,68,68,.3); }
+      .modal-body { padding:22px; overflow-y:auto; flex:1; }
+      .modal-footer { padding:14px 22px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; }
+
+      /* FORM */
+      .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+      .form-grid .full { grid-column:1/-1; }
+      .form-group { display:flex; flex-direction:column; gap:5px; }
+      .form-group label { font-size:.76rem; font-weight:600; color:var(--text-muted); letter-spacing:.03em; }
+      .form-group input,
+      .form-group select {
+        padding:8px 11px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm);
+        color:var(--text); font-size:.875rem; outline:none; transition:border-color .2s,box-shadow .2s; width:100%; font-family:inherit;
+      }
+      .form-group input::placeholder { color:var(--text-faint); }
+      .form-group input:focus,
+      .form-group select:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-dim); }
+      .form-group select option { background:var(--surface2); }
+      .form-hint { font-size:.72rem; color:var(--text-faint); margin-top:2px; }
+      .form-section { font-size:.72rem; font-weight:700; color:var(--text-faint); text-transform:uppercase; letter-spacing:.08em; padding-bottom:4px; border-bottom:1px solid var(--border); margin-top:4px; margin-bottom:2px; grid-column:1/-1; }
+
+      /* CONFIRM */
+      .confirm-modal { background:var(--surface); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow-lg); width:100%; max-width:420px; padding:26px 22px; display:flex; flex-direction:column; gap:14px; animation:slideUp .25s ease; }
+      .confirm-icon { width:50px; height:50px; border-radius:50%; background:var(--danger-dim); border:1px solid rgba(239,68,68,.3); display:flex; align-items:center; justify-content:center; }
+      .confirm-icon svg { width:22px; height:22px; color:var(--danger); }
+      .confirm-modal h3 { font-size:1.05rem; font-weight:700; color:var(--text); }
+      .confirm-modal p { font-size:.875rem; color:var(--text-muted); line-height:1.6; }
+      .confirm-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:4px; }
+
+      /* TOAST */
+      #toast-container { position:fixed; bottom:22px; right:22px; z-index:200; display:flex; flex-direction:column; gap:7px; pointer-events:none; }
+      .toast { padding:11px 16px; border-radius:var(--radius-sm); font-size:.855rem; font-weight:500; display:flex; align-items:center; gap:9px; box-shadow:var(--shadow); border:1px solid transparent; animation:toastIn .3s ease; pointer-events:auto; min-width:230px; max-width:360px; font-family:inherit; }
+      @keyframes toastIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+      .toast.success { background:#0f2318; border-color:rgba(34,197,94,.35); color:var(--success); }
+      .toast.error   { background:#200f0f; border-color:rgba(239,68,68,.35); color:var(--danger); }
+      .toast.info    { background:#0f1230; border-color:rgba(99,102,241,.35); color:var(--accent-light); }
+
+      /* SPINNER */
+      .spinner { width:18px; height:18px; border-radius:50%; border:2px solid var(--border); border-top-color:var(--accent); animation:spin .7s linear infinite; flex-shrink:0; }
+      @keyframes spin { to{transform:rotate(360deg)} }
+      .loading-inner { display:flex; align-items:center; justify-content:center; gap:10px; color:var(--text-muted); padding:40px; }
+
+      @media(max-width:640px) {
+        .form-grid { grid-template-columns:1fr; }
+        .form-grid .full { grid-column:1; }
+        .form-section { grid-column:1; }
+        .page-header { flex-direction:column; }
+        .nav-inner { padding:0 14px; }
+        main { padding:18px 14px 48px; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- NAV -->
+    <nav>
+      <div class="nav-inner">
+        <div class="nav-brand">
+          <div class="nav-logo">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+          <span class="nav-title">GoEcosystem</span>
+          <span class="nav-badge">Admin</span>
+        </div>
+        <div class="nav-right">
+          <a href="/admin/dashboard" class="nav-link">Dashboard</a>
+          <a href="/admin/pacientes" class="nav-link active">Pacientes</a>
+          <a href="/admin/usuarios" class="nav-link">Usuarios</a>
+          <button id="logout-btn" class="btn-logout">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;height:14px">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+            Salir
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+      <!-- HEADER -->
+      <div class="page-header">
+        <div>
+          <h1>Gestión de Pacientes</h1>
+          <p>Administra el registro de pacientes del sistema clínico.</p>
+        </div>
+        <button id="btn-new" class="btn btn-primary">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Nuevo Paciente
+        </button>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <span class="stat-label">Total Pacientes</span>
+          <span class="stat-value" id="stat-total">—</span>
+          <span class="stat-sub">en el sistema</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Mostrando</span>
+          <span class="stat-value" id="stat-showing">—</span>
+          <span class="stat-sub">en esta página</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Prioridad Alta</span>
+          <span class="stat-value" id="stat-alta" style="color:#f87171">—</span>
+          <span class="stat-sub">requieren atención</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Sesión</span>
+          <span class="stat-value" style="font-size:.95rem;margin-top:4px" id="stat-user">—</span>
+          <span class="stat-sub">usuario activo</span>
+        </div>
+      </div>
+
+      <!-- TOOLBAR -->
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input id="search-input" type="text" placeholder="Buscar por nombre o documento…" autocomplete="off" />
+        </div>
+        <button id="btn-refresh" class="btn btn-ghost">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Actualizar
+        </button>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre completo</th>
+                <th>Documento</th>
+                <th>Género</th>
+                <th>EPS</th>
+                <th>Prioridad</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="patients-tbody">
+              <tr><td colspan="8"><div class="loading-inner"><div class="spinner"></div><span>Cargando pacientes…</span></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <span id="pagination-info">—</span>
+          <div class="pagination-btns" id="pagination-btns"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- TOAST -->
+    <div id="toast-container"></div>
+
+    <!-- MODAL CREAR/EDITAR -->
+    <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 id="modal-title">Nuevo Paciente</h2>
+          <button class="modal-close" id="modal-close-btn" aria-label="Cerrar">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;height:14px">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="patient-form" novalidate>
+            <div class="form-grid">
+
+              <span class="form-section">Identificación</span>
+
+              <div class="form-group">
+                <label for="f-tipo-doc">Tipo de documento *</label>
+                <select id="f-tipo-doc" name="tipo_documento" required>
+                  <option value="">Seleccionar…</option>
+                  <option value="CC">CC — Cédula de Ciudadanía</option>
+                  <option value="TI">TI — Tarjeta de Identidad</option>
+                  <option value="CE">CE — Cédula de Extranjería</option>
+                  <option value="PA">PA — Pasaporte</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="f-documento">Número de documento *</label>
+                <input id="f-documento" name="documento" type="text" placeholder="Ej: 12345678" required />
+              </div>
+
+              <span class="form-section">Datos personales</span>
+
+              <div class="form-group full">
+                <label for="f-nombre">Nombre completo *</label>
+                <input id="f-nombre" name="nombre_completo" type="text" placeholder="Juan Carlos Pérez García" required />
+              </div>
+
+              <div class="form-group">
+                <label for="f-fecha-nac">Fecha de nacimiento *</label>
+                <input id="f-fecha-nac" name="fecha_nacimiento" type="date" required />
+              </div>
+
+              <div class="form-group">
+                <label for="f-genero">Género *</label>
+                <select id="f-genero" name="genero" required>
+                  <option value="">Seleccionar…</option>
+                  <option value="Masculino">Masculino</option>
+                  <option value="Femenino">Femenino</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+
+              <span class="form-section">Contacto</span>
+
+              <div class="form-group">
+                <label for="f-telefono">Teléfono *</label>
+                <input id="f-telefono" name="telefono" type="tel" placeholder="3001234567" required />
+              </div>
+
+              <div class="form-group">
+                <label for="f-correo">Correo electrónico</label>
+                <input id="f-correo" name="correo" type="email" placeholder="juan@example.test" />
+                <span class="form-hint">Debe terminar en @example.test</span>
+              </div>
+
+              <div class="form-group full">
+                <label for="f-ciudad">Ciudad</label>
+                <input id="f-ciudad" name="ciudad" type="text" placeholder="Bogotá" />
+              </div>
+
+              <span class="form-section">EPS y Gestión</span>
+
+              <div class="form-group">
+                <label for="f-eps-codigo">Código EPS *</label>
+                <input id="f-eps-codigo" name="eps_codigo" type="text" placeholder="EPS001" required />
+              </div>
+
+              <div class="form-group">
+                <label for="f-eps-nombre">Nombre EPS *</label>
+                <input id="f-eps-nombre" name="eps_nombre" type="text" placeholder="Sura" required />
+              </div>
+
+              <div class="form-group">
+                <label for="f-prioridad">Prioridad *</label>
+                <select id="f-prioridad" name="prioridad" required>
+                  <option value="">Seleccionar…</option>
+                  <option value="Alta">Alta</option>
+                  <option value="Media">Media</option>
+                  <option value="Baja">Baja</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="f-estado">Estado *</label>
+                <select id="f-estado" name="estado" required>
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="En atención">En atención</option>
+                  <option value="Atendido">Atendido</option>
+                </select>
+              </div>
+
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" id="modal-cancel-btn">Cancelar</button>
+          <button class="btn btn-primary" id="modal-save-btn">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL CONFIRMAR DELETE -->
+    <div class="modal-overlay" id="confirm-overlay" role="dialog" aria-modal="true">
+      <div class="confirm-modal">
+        <div class="confirm-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+        </div>
+        <h3>Eliminar paciente</h3>
+        <p id="confirm-msg">¿Seguro que deseas eliminar este paciente? Esta acción no se puede deshacer.</p>
+        <div class="confirm-actions">
+          <button class="btn btn-ghost" id="confirm-cancel-btn">Cancelar</button>
+          <button class="btn btn-danger" id="confirm-delete-btn">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:13px;height:13px">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            Sí, eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      import { getUser, logout, isAdmin } from "../../utils/auth";
+      import { patientService } from "../../services/patientService";
+
+      // ── AUTH ────────────────────────────────────────────────────────────────
+      const me = getUser();
+      if (!me) { window.location.href = "/login"; throw new Error(); }
+      const statUser = document.getElementById("stat-user");
+      if (statUser) statUser.textContent = me.nombre || me.username;
+      document.getElementById("logout-btn")!.addEventListener("click", logout);
+
+      // ── STATE ────────────────────────────────────────────────────────────────
+      let allPats: any[] = [];
+      let shown: any[] = [];
+      let editId: number | null = null;
+      let delId: number | null = null;
+      const PAGE = 10;
+      let page = 1;
+
+      // ── TOAST ────────────────────────────────────────────────────────────────
+      function toast(msg: string, type: "success"|"error"|"info" = "info", ms = 3500) {
+        const c = document.getElementById("toast-container")!;
+        const el = document.createElement("div");
+        el.className = `toast ${type}`;
+        el.innerHTML = `<strong>${type==="success"?"✓":type==="error"?"✕":"ℹ"}</strong> ${msg}`;
+        c.appendChild(el);
+        setTimeout(() => { el.style.opacity="0"; el.style.transition="opacity .4s"; setTimeout(()=>el.remove(),400); }, ms);
+      }
+
+      // ── HELPERS ──────────────────────────────────────────────────────────────
+      function prioClass(p: string) {
+        if (!p) return "";
+        const l = p.toLowerCase();
+        if (l==="alta") return "prioridad-alta";
+        if (l==="media") return "prioridad-media";
+        return "prioridad-baja";
+      }
+      function estadoClass(e: string) {
+        if (!e) return "";
+        const l = e.toLowerCase();
+        if (l.includes("atenci")) return "estado-atencion";
+        if (l==="atendido") return "estado-atendido";
+        return "estado-pendiente";
+      }
+
+      // ── RENDER ───────────────────────────────────────────────────────────────
+      function render() {
+        const tbody = document.getElementById("patients-tbody")!;
+        document.getElementById("stat-showing")!.textContent = String(shown.length);
+        const alta = allPats.filter((p:any)=>p.prioridad?.toLowerCase()==="alta").length;
+        document.getElementById("stat-alta")!.textContent = String(alta);
+
+        const start = (page-1)*PAGE;
+        const slice = shown.slice(start, start+PAGE);
+
+        if (!shown.length) {
+          tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
+            <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <h3>Sin resultados</h3><p>No se encontraron pacientes.</p></div></td></tr>`;
+          renderPag(); return;
+        }
+
+        const admin = isAdmin();
+        tbody.innerHTML = slice.map((p:any) => `
+          <tr>
+            <td class="dim">#${p.paciente_id}</td>
+            <td><strong>${p.nombre_completo ?? "—"}</strong><br><span style="font-size:.75rem;color:var(--text-faint)">${p.telefono ?? ""}</span></td>
+            <td><span class="doc-badge">${p.tipo_documento}</span> <span class="dim" style="font-size:.8rem">${p.documento}</span></td>
+            <td class="dim">${p.genero ?? "—"}</td>
+            <td>
+              <span style="font-weight:600;font-size:.82rem">${p.eps_nombre ?? "—"}</span><br>
+              <span style="font-size:.73rem;color:var(--text-faint)">${p.eps_codigo ?? ""}</span>
+            </td>
+            <td><span class="prioridad-badge ${prioClass(p.prioridad)}">${p.prioridad ?? "—"}</span></td>
+            <td>
+              <span class="estado-badge ${estadoClass(p.estado)}">
+                <span class="estado-dot"></span>${p.estado ?? "—"}
+              </span>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <button class="btn btn-ghost btn-sm" data-action="edit" data-id="${p.paciente_id}" title="Editar">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                  Editar
+                </button>
+                ${admin ? `
+                <button class="btn btn-danger btn-sm" data-action="delete" data-id="${p.paciente_id}" data-name="${p.nombre_completo ?? ""}" title="Eliminar">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  Eliminar
+                </button>` : ""}
+              </div>
+            </td>
+          </tr>`).join("");
+        renderPag();
+      }
+
+      function renderPag() {
+        const total = Math.max(1, Math.ceil(shown.length/PAGE));
+        const info = document.getElementById("pagination-info")!;
+        const btns = document.getElementById("pagination-btns")!;
+        const s = (page-1)*PAGE+1, e = Math.min(page*PAGE, shown.length);
+        info.textContent = shown.length===0 ? "Sin resultados" : `${s}–${e} de ${shown.length}`;
+        btns.innerHTML = "";
+        const prev = document.createElement("button");
+        prev.className="page-btn"; prev.textContent="‹"; prev.disabled=page===1;
+        prev.onclick=()=>{page--;render();};
+        btns.appendChild(prev);
+        const mv=5; let sp=Math.max(1,page-2); let ep=Math.min(total,sp+mv-1);
+        if(ep-sp<mv-1) sp=Math.max(1,ep-mv+1);
+        for(let i=sp;i<=ep;i++){
+          const b=document.createElement("button");
+          b.className=`page-btn${i===page?" active":""}`;
+          b.textContent=String(i);
+          b.onclick=()=>{page=i;render();};
+          btns.appendChild(b);
+        }
+        const next=document.createElement("button");
+        next.className="page-btn"; next.textContent="›"; next.disabled=page===total;
+        next.onclick=()=>{page++;render();};
+        btns.appendChild(next);
+      }
+
+      // ── LOAD ─────────────────────────────────────────────────────────────────
+      async function load() {
+        const tbody = document.getElementById("patients-tbody")!;
+        tbody.innerHTML = `<tr><td colspan="8"><div class="loading-inner"><div class="spinner"></div><span>Cargando…</span></div></td></tr>`;
+        try {
+          const [pats, total] = await Promise.all([patientService.getAll(0,500), patientService.count()]);
+          allPats = pats; shown = pats;
+          document.getElementById("stat-total")!.textContent = String(total);
+          page = 1; render();
+        } catch(err:any) {
+          const d = err?.response?.data?.detail ?? "Error al cargar pacientes";
+          toast(typeof d==="string"?d:JSON.stringify(d), "error");
+          tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><h3>Error</h3><p>${typeof d==="string"?d:"Error al cargar"}</p></div></td></tr>`;
+        }
+      }
+
+      // ── SEARCH ───────────────────────────────────────────────────────────────
+      let st: any;
+      document.getElementById("search-input")!.addEventListener("input", (e) => {
+        clearTimeout(st);
+        st = setTimeout(async () => {
+          const q = (e.target as HTMLInputElement).value.trim();
+          if (!q) { shown=allPats; page=1; render(); return; }
+          try { shown = await patientService.search(q); page=1; render(); }
+          catch { toast("Error al buscar","error"); }
+        }, 350);
+      });
+
+      document.getElementById("btn-refresh")!.addEventListener("click",()=>{
+        (document.getElementById("search-input") as HTMLInputElement).value="";
+        load();
+      });
+
+      // ── MODAL ────────────────────────────────────────────────────────────────
+      const overlay = document.getElementById("modal-overlay")!;
+      const form = document.getElementById("patient-form") as HTMLFormElement;
+      const modalTitle = document.getElementById("modal-title")!;
+      const saveBtn = document.getElementById("modal-save-btn")!;
+
+      function setField(name:string, val:string) {
+        const el = form.querySelector(`[name="${name}"]`) as HTMLInputElement|HTMLSelectElement|null;
+        if (el) el.value = val ?? "";
+      }
+
+      function openModal(pat?: any) {
+        editId = pat ? pat.paciente_id : null;
+        modalTitle.textContent = pat ? "Editar Paciente" : "Nuevo Paciente";
+        form.reset();
+        if (pat) {
+          setField("tipo_documento", pat.tipo_documento);
+          setField("documento", pat.documento);
+          setField("nombre_completo", pat.nombre_completo);
+          setField("fecha_nacimiento", pat.fecha_nacimiento);
+          setField("genero", pat.genero);
+          setField("telefono", pat.telefono);
+          setField("correo", pat.correo ?? "");
+          setField("ciudad", pat.ciudad ?? "");
+          setField("eps_codigo", pat.eps_codigo);
+          setField("eps_nombre", pat.eps_nombre);
+          setField("prioridad", pat.prioridad);
+          setField("estado", pat.estado);
+        }
+        overlay.classList.add("open");
+      }
+      function closeModal() { overlay.classList.remove("open"); editId=null; form.reset(); }
+
+      document.getElementById("btn-new")!.addEventListener("click",()=>openModal());
+      document.getElementById("modal-close-btn")!.addEventListener("click",closeModal);
+      document.getElementById("modal-cancel-btn")!.addEventListener("click",closeModal);
+      overlay.addEventListener("click",(e)=>{ if(e.target===overlay) closeModal(); });
+
+      // ── SAVE ─────────────────────────────────────────────────────────────────
+      saveBtn.addEventListener("click", async () => {
+        const fd = new FormData(form);
+        const raw: Record<string,string> = {};
+        fd.forEach((v,k) => { raw[k] = String(v).trim(); });
+
+        // Campos requeridos del backend
+        const req = ["tipo_documento","documento","nombre_completo","fecha_nacimiento","genero","telefono","eps_codigo","eps_nombre","prioridad","estado"];
+        for (const k of req) {
+          if (!raw[k]) { toast(`Campo requerido: ${k.replace(/_/g," ")}`, "error"); return; }
+        }
+
+        // Limpiar opcionales vacíos
+        const payload: Record<string,any> = {...raw};
+        if (!payload.correo) delete payload.correo;
+        if (!payload.ciudad) delete payload.ciudad;
+
+        saveBtn.setAttribute("disabled","true");
+        saveBtn.innerHTML = `<div class="spinner" style="border-top-color:#fff"></div> Guardando…`;
+        try {
+          if (editId !== null) {
+            await patientService.update(editId, payload as any);
+            toast("Paciente actualizado correctamente","success");
+          } else {
+            await patientService.create(payload as any);
+            toast("Paciente creado correctamente","success");
+          }
+          closeModal(); await load();
+        } catch(err:any) {
+          const d = err?.response?.data?.detail;
+          toast(typeof d==="string" ? d : Array.isArray(d) ? d.map((x:any)=>x.msg).join(" | ") : "Error al guardar", "error");
+        } finally {
+          saveBtn.removeAttribute("disabled");
+          saveBtn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Guardar`;
+        }
+      });
+
+      // ── DELETE ───────────────────────────────────────────────────────────────
+      const confirmOverlay = document.getElementById("confirm-overlay")!;
+      const delBtn = document.getElementById("confirm-delete-btn")!;
+      function openConfirm(id:number, name:string) {
+        delId=id;
+        document.getElementById("confirm-msg")!.textContent = `¿Eliminar al paciente "${name}"? Esta acción no se puede deshacer.`;
+        confirmOverlay.classList.add("open");
+      }
+      function closeConfirm() { confirmOverlay.classList.remove("open"); delId=null; }
+      document.getElementById("confirm-cancel-btn")!.addEventListener("click",closeConfirm);
+      confirmOverlay.addEventListener("click",(e)=>{ if(e.target===confirmOverlay) closeConfirm(); });
+      delBtn.addEventListener("click", async () => {
+        if(delId===null) return;
+        delBtn.setAttribute("disabled","true");
+        delBtn.innerHTML = `<div class="spinner" style="width:13px;height:13px;border-top-color:var(--danger)"></div> Eliminando…`;
+        try {
+          await patientService.delete(delId);
+          toast("Paciente eliminado","success");
+          closeConfirm(); await load();
+        } catch(err:any) {
+          const d = err?.response?.data?.detail;
+          toast(typeof d==="string"?d:"Error al eliminar","error");
+        } finally {
+          delBtn.removeAttribute("disabled");
+          delBtn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:13px;height:13px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg> Sí, eliminar`;
+        }
+      });
+
+      // ── DELEGACIÓN TABLA ─────────────────────────────────────────────────────
+      document.getElementById("patients-tbody")!.addEventListener("click",(e)=>{
+        const t = (e.target as HTMLElement).closest("[data-action]") as HTMLElement|null;
+        if(!t) return;
+        const id = Number(t.dataset.id);
+        if(t.dataset.action==="edit") {
+          const p = allPats.find((x:any)=>x.paciente_id===id) ?? shown.find((x:any)=>x.paciente_id===id);
+          if(p) openModal(p);
+        } else if(t.dataset.action==="delete") {
+          openConfirm(id, t.dataset.name ?? "este paciente");
+        }
+      });
+
+      // ── ESC ──────────────────────────────────────────────────────────────────
+      document.addEventListener("keydown",(e)=>{
+        if(e.key==="Escape") {
+          if(overlay.classList.contains("open")) closeModal();
+          if(confirmOverlay.classList.contains("open")) closeConfirm();
+        }
+      });
+
+      // ── INIT ─────────────────────────────────────────────────────────────────
+      load();
+    </script>
+  </body>
+</html>
