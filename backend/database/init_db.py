@@ -27,4 +27,4 @@ def init_db() -> None:
 
 if __name__ == "__main__":
     init_db()
-    print("✅ Base de datos inicializada correctamente.")
+    print("[OK] Base de datos inicializada correctamente.")

@@ -17,18 +17,20 @@ class ExcelReader:
     # Columnas esperadas en el Excel
     REQUIRED_COLUMNS = [
         "TipoDocumento",
-        "NumeroDocumento",
-        "Nombres",
-        "Apellidos",
+        "Documento",
+        "NombreCompleto",
         "FechaNacimiento",
-        "Sexo",
+        "Genero",
+        "Telefono",
+        "EpsCodigo",
+        "EpsNombre",
+        "Prioridad",
+        "Estado",
     ]
 
     OPTIONAL_COLUMNS = [
-        "Telefono",
         "Correo",
-        "Direccion",
-        "Estado",
+        "Ciudad",
     ]
 
     ALL_COLUMNS = REQUIRED_COLUMNS + OPTIONAL_COLUMNS
@@ -125,24 +127,36 @@ class ExcelReader:
             """Obtiene el valor de una columna por su nombre estándar."""
             normalized = std_name.lower()
             if normalized in columns_map:
-                return record.get(columns_map[normalized])
+                val = record.get(columns_map[normalized])
+                if pd.isna(val):
+                    return default
+                return val
             return default
         
         # Extraer y normalizar valores
         tipo_doc = get_value("TipoDocumento", "").strip().upper() if get_value("TipoDocumento") else None
-        numero_doc = str(get_value("NumeroDocumento", "")).strip()
-        nombres = get_value("Nombres", "").strip().upper() if get_value("Nombres") else None
-        apellidos = get_value("Apellidos", "").strip().upper() if get_value("Apellidos") else None
+        documento = str(get_value("Documento", "")).strip() if get_value("Documento") else None
+        if documento and documento.endswith(".0"):
+            documento = documento[:-2]
+            
+        nombre_completo = get_value("NombreCompleto", "").strip() if get_value("NombreCompleto") else None
         fecha_nac = get_value("FechaNacimiento")
-        sexo = get_value("Sexo", "").strip().upper() if get_value("Sexo") else None
-        telefono = str(get_value("Telefono", "")).strip() if get_value("Telefono") else None
-        correo = get_value("Correo", "").strip().lower() if get_value("Correo") else None
-        direccion = get_value("Direccion", "").strip() if get_value("Direccion") else None
-        estado = get_value("Estado", True)
+        genero = get_value("Genero", "").strip() if get_value("Genero") else None
         
-        # Normalizar estado
-        if isinstance(estado, str):
-            estado = estado.lower() in ('true', '1', 'si', 'sí', 'activo')
+        telefono = str(get_value("Telefono", "")).strip() if get_value("Telefono") else None
+        if telefono and telefono.endswith(".0"):
+            telefono = telefono[:-2]
+            
+        correo = get_value("Correo", "").strip().lower() if get_value("Correo") else None
+        
+        eps_codigo = str(get_value("EpsCodigo", "")).strip() if get_value("EpsCodigo") else None
+        if eps_codigo and eps_codigo.endswith(".0"):
+            eps_codigo = eps_codigo[:-2]
+            
+        eps_nombre = get_value("EpsNombre", "").strip() if get_value("EpsNombre") else None
+        ciudad = get_value("Ciudad", "").strip() if get_value("Ciudad") else None
+        prioridad = get_value("Prioridad", "").strip() if get_value("Prioridad") else None
+        estado = get_value("Estado", "").strip() if get_value("Estado") else None
         
         # Normalizar fecha
         if isinstance(fecha_nac, str):
@@ -152,17 +166,21 @@ class ExcelReader:
                 fecha_nac = None
         elif isinstance(fecha_nac, datetime):
             fecha_nac = fecha_nac.date()
+        elif hasattr(fecha_nac, "date"):
+            fecha_nac = fecha_nac.date()
         
         return {
             "tipo_documento": tipo_doc,
-            "numero_documento": numero_doc,
-            "nombres": nombres,
-            "apellidos": apellidos,
+            "documento": documento,
+            "nombre_completo": nombre_completo,
             "fecha_nacimiento": fecha_nac,
-            "sexo": sexo,
+            "genero": genero,
             "telefono": telefono if telefono else None,
             "correo": correo if correo else None,
-            "direccion": direccion if direccion else None,
+            "eps_codigo": eps_codigo,
+            "eps_nombre": eps_nombre,
+            "ciudad": ciudad if ciudad else None,
+            "prioridad": prioridad,
             "estado": estado,
             "_row": row_num,
         }

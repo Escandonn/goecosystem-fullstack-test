@@ -2,8 +2,7 @@
 
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, DateTime, Enum as SQLEnum
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Date, DateTime
 
 from database.base import Base
 
@@ -13,29 +12,31 @@ class Patient(Base):
 
     __tablename__ = "patients"
 
-    id = Column(Integer, primary_key=True, index=True)
+    paciente_id = Column(Integer, primary_key=True, index=True)
 
     # Documento de identidad
-    tipo_documento = Column(String(20), nullable=False)
-    numero_documento = Column(String(50), nullable=False, unique=True, index=True)
+    tipo_documento = Column(String(3), nullable=False)
+    documento = Column(String(20), nullable=False, unique=True, index=True)
 
     # Datos personales
-    nombres = Column(String(100), nullable=False)
-    apellidos = Column(String(100), nullable=False)
-    fecha_nacimiento = Column(String(10), nullable=False)  # ISO format: YYYY-MM-DD
-    sexo = Column(String(10), nullable=False)  # M / F / Otro
+    nombre_completo = Column(String(150), nullable=False)
+    fecha_nacimiento = Column(Date, nullable=False)
+    genero = Column(String(30), nullable=False)
 
     # Contacto
-    telefono = Column(String(20), nullable=True)
-    correo = Column(String(100), nullable=True)
-    direccion = Column(String(255), nullable=True)
+    telefono = Column(String(20), nullable=False)
+    correo = Column(String(150), nullable=True)
+    eps_codigo = Column(String(10), nullable=False)
+    eps_nombre = Column(String(100), nullable=False)
+    ciudad = Column(String(80), nullable=True)
 
-    # Estado del paciente
-    estado = Column(String(20), nullable=False, default="Activo")  # Activo / Inactivo
+    # Gestión de lista
+    prioridad = Column(String(10), nullable=False)
+    estado = Column(String(20), nullable=False, default="Pendiente")
 
     # Auditoría
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    fecha_creacion = Column(DateTime, default=datetime.utcnow, nullable=False)
+    fecha_actualizacion = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     def __repr__(self) -> str:
-        return f"<Patient(id={self.id}, nombres='{self.nombres}', apellidos='{self.apellidos}')>"
+        return f"<Patient(paciente_id={self.paciente_id}, nombre_completo='{self.nombre_completo}', documento='{self.documento}')>"

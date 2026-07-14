@@ -54,15 +54,15 @@ class PatientService:
 
     def create(self, patient_data: PatientCreate) -> Patient:
         """Crea un paciente validando duplicados."""
-        existing = self.repository.get_by_documento(patient_data.numero_documento)
+        existing = self.repository.get_by_documento(patient_data.documento)
         if existing:
-            logger.warning("Intento de crear paciente duplicado | doc=%s", patient_data.numero_documento)
+            logger.warning("Intento de crear paciente duplicado | doc=%s", patient_data.documento)
             raise ConflictError(
-                f"Ya existe un paciente con el documento '{patient_data.numero_documento}'"
+                f"Ya existe un paciente con el documento '{patient_data.documento}'"
             )
         patient = Patient(**patient_data.model_dump())
         result = self.repository.create(patient)
-        logger.info("Paciente creado | id=%d doc=%s", result.id, patient_data.numero_documento)
+        logger.info("Paciente creado | id=%d doc=%s", result.paciente_id, patient_data.documento)
         return result
 
     def update(self, patient_id: int, patient_data: PatientUpdate) -> Patient:
@@ -70,12 +70,12 @@ class PatientService:
         patient = self.get_by_id(patient_id)
 
         # Si se actualiza el documento, verificar que no exista en otro paciente
-        if patient_data.numero_documento and patient_data.numero_documento != patient.numero_documento:
-            existing = self.repository.get_by_documento(patient_data.numero_documento)
-            if existing and existing.id != patient_id:
-                logger.warning("Conflicto al actualizar | id=%d doc=%s ya existe", patient_id, patient_data.numero_documento)
+        if patient_data.documento and patient_data.documento != patient.documento:
+            existing = self.repository.get_by_documento(patient_data.documento)
+            if existing and existing.paciente_id != patient_id:
+                logger.warning("Conflicto al actualizar | id=%d doc=%s ya existe", patient_id, patient_data.documento)
                 raise ConflictError(
-                    f"Ya existe un paciente con el documento '{patient_data.numero_documento}'"
+                    f"Ya existe un paciente con el documento '{patient_data.documento}'"
                 )
 
         update_data = patient_data.model_dump(exclude_unset=True)
@@ -136,19 +136,19 @@ class PatientService:
                     continue
 
                 # Validaciones básicas
-                if not record.get("numero_documento"):
+                if not record.get("documento"):
                     validation_errors.append(ImportError(
                         row=row_num,
-                        column="NumeroDocumento",
-                        error="Número de documento es requerido"
+                        column="Documento",
+                        error="El documento es requerido"
                     ))
                     continue
 
-                if not record.get("nombres"):
+                if not record.get("nombre_completo"):
                     validation_errors.append(ImportError(
                         row=row_num,
-                        column="Nombres",
-                        error="Nombres es requerido"
+                        column="NombreCompleto",
+                        error="El nombre completo es requerido"
                     ))
                     continue
 

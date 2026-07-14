@@ -20,29 +20,28 @@ class PatientRepository:
 
     def get_by_id(self, patient_id: int) -> Optional[Patient]:
         """Busca un paciente por su ID."""
-        return self.db.query(Patient).filter(Patient.id == patient_id).first()
+        return self.db.query(Patient).filter(Patient.paciente_id == patient_id).first()
 
-    def get_by_documento(self, numero_documento: str) -> Optional[Patient]:
+    def get_by_documento(self, documento: str) -> Optional[Patient]:
         """Busca un paciente por su número de documento."""
-        return self.db.query(Patient).filter(Patient.numero_documento == numero_documento).first()
+        return self.db.query(Patient).filter(Patient.documento == documento).first()
 
     def get_existing_documents(self, documentos: List[str]) -> set:
         """Retorna un set de números de documento que ya existen en la BD."""
         existing = (
-            self.db.query(Patient.numero_documento)
-            .filter(Patient.numero_documento.in_(documentos))
+            self.db.query(Patient.documento)
+            .filter(Patient.documento.in_(documentos))
             .all()
         )
         return {doc[0] for doc in existing}
 
     def search(self, query: str, skip: int = 0, limit: int = 100) -> list[Patient]:
-        """Busca pacientes por nombres o apellidos."""
+        """Busca pacientes por nombre completo o documento."""
         return (
             self.db.query(Patient)
             .filter(
-                (Patient.nombres.ilike(f"%{query}%"))
-                | (Patient.apellidos.ilike(f"%{query}%"))
-                | (Patient.numero_documento.ilike(f"%{query}%"))
+                (Patient.nombre_completo.ilike(f"%{query}%"))
+                | (Patient.documento.ilike(f"%{query}%"))
             )
             .offset(skip)
             .limit(limit)
@@ -74,15 +73,15 @@ class PatientRepository:
         error_list = []
         
         # Extraer números de documento para verificar duplicados
-        documentos = [p.get("numero_documento") for p in patients_data if p.get("numero_documento")]
+        documentos = [p.get("documento") for p in patients_data if p.get("documento")]
         existing_docs = self.get_existing_documents(documentos) if documentos else set()
         
         for patient_data in patients_data:
             row_num = patient_data.pop("_row", None)
             
             # Verificar si el documento ya existe
-            numero_doc = patient_data.get("numero_documento")
-            if numero_doc in existing_docs:
+            doc_val = patient_data.get("documento")
+            if doc_val in existing_docs:
                 duplicates += 1
                 continue
             
@@ -90,15 +89,15 @@ class PatientRepository:
                 patient = Patient(**patient_data)
                 self.db.add(patient)
                 self.db.flush()  # Obtener el ID sin hacer commit
-                ids_insertados.append(patient.id)
+                ids_insertados.append(patient.paciente_id)
                 inserted += 1
-                existing_docs.add(numero_doc)  # Evitar duplicados dentro del mismo batch
+                existing_docs.add(doc_val)  # Evitar duplicados dentro del mismo batch
             except IntegrityError:
                 self.db.rollback()
                 duplicates += 1
                 error_list.append({
                     "row": row_num,
-                    "error": f"Documento duplicado: {numero_doc}"
+                    "error": f"Documento duplicado: {doc_val}"
                 })
             except Exception as e:
                 errors += 1

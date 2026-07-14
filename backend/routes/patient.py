@@ -54,25 +54,25 @@ def count_pacientes(
     return {"total": service.count()}
 
 
-@router.get("/{patient_id}", response_model=PatientResponse, tags=["Pacientes"],
+@router.get("/{paciente_id}", response_model=PatientResponse, tags=["Pacientes"],
          summary="Obtener paciente por ID",
          description="Obtiene un paciente específico por su identificador único.",
          responses={404: {"description": "Paciente no encontrado"}})
 def get_paciente(
-    patient_id: int,
+    paciente_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Obtiene un paciente por su ID."""
     service = PatientService(db)
-    return service.get_by_id(patient_id)
+    return service.get_by_id(paciente_id)
 
 
 @router.post("/", response_model=PatientResponse, status_code=status.HTTP_201_CREATED,
                tags=["Pacientes"],
                summary="Crear nuevo paciente",
-               description="Crea un nuevo paciente en el sistema. El número de documento debe ser único.",
-               responses={409: {"description": "Ya existe un paciente con ese número de documento"}})
+               description="Crea un nuevo paciente en el sistema. El documento debe ser único.",
+               responses={409: {"description": "Ya existe un paciente con ese documento"}})
 def create_paciente(
     patient: PatientCreate,
     db: Session = Depends(get_db),
@@ -83,35 +83,35 @@ def create_paciente(
     return service.create(patient)
 
 
-@router.put("/{patient_id}", response_model=PatientResponse, tags=["Pacientes"],
+@router.put("/{paciente_id}", response_model=PatientResponse, tags=["Pacientes"],
                summary="Actualizar paciente",
                description="Actualiza los datos de un paciente existente. Solo se modifican los campos enviados.",
                responses={404: {"description": "Paciente no encontrado"},
-                          409: {"description": "Conflicto con número de documento"}})
+                          409: {"description": "Conflicto con documento"}})
 def update_paciente(
-    patient_id: int,
+    paciente_id: int,
     patient: PatientUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Actualiza un paciente existente."""
     service = PatientService(db)
-    return service.update(patient_id, patient)
+    return service.update(paciente_id, patient)
 
 
-@router.delete("/{patient_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Pacientes"],
+@router.delete("/{paciente_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Pacientes"],
                summary="Eliminar paciente",
                description="Elimina permanentemente un paciente por su ID. **Requiere rol admin.**",
                responses={404: {"description": "Paciente no encontrado"},
                           403: {"description": "Acceso prohibido"}})
 def delete_paciente(
-    patient_id: int,
+    paciente_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin),
 ):
     """Elimina un paciente por su ID (solo admin)."""
     service = PatientService(db)
-    service.delete(patient_id)
+    service.delete(paciente_id)
     return None
 
 

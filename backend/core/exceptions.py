@@ -127,10 +127,19 @@ def register_exception_handlers(app: FastAPI) -> None:
     # ── Error de validación de Pydantic (422) ───────────────────
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+        errors = []
+        for error in exc.errors():
+            sanitized_error = error.copy()
+            if "ctx" in sanitized_error and isinstance(sanitized_error["ctx"], dict):
+                ctx = sanitized_error["ctx"].copy()
+                if "error" in ctx and isinstance(ctx["error"], Exception):
+                    ctx["error"] = str(ctx["error"])
+                sanitized_error["ctx"] = ctx
+            errors.append(sanitized_error)
         return _error_response(
             "Error de validación de datos",
             status.HTTP_422_UNPROCESSABLE_ENTITY,
-            details={"errors": exc.errors()},
+            details={"errors": errors},
         )
 
     # ── Excepción genérica no controlada (500) ──────────────────
