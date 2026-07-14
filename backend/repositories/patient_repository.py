@@ -81,12 +81,25 @@ class PatientRepository:
             
             # Verificar si el documento ya existe
             doc_val = patient_data.get("documento")
+            if not doc_val:
+                errors += 1
+                error_list.append({
+                    "row": row_num,
+                    "error": "Documento es requerido"
+                })
+                continue
+                
             if doc_val in existing_docs:
                 duplicates += 1
                 continue
             
             try:
-                patient = Patient(**patient_data)
+                # Solo pasar los datos necesarios, ignorar columnas generadas por la BD
+                clean_data = {
+                    k: v for k, v in patient_data.items()
+                    if k not in ("paciente_id", "fecha_creacion", "fecha_actualizacion")
+                }
+                patient = Patient(**clean_data)
                 self.db.add(patient)
                 self.db.flush()  # Obtener el ID sin hacer commit
                 ids_insertados.append(patient.paciente_id)

@@ -127,19 +127,27 @@ def importar_pacientes(
     """
     Importa pacientes desde un archivo Excel.
     
-    El archivo Excel debe contener las siguientes columnas:
-    - **TipoDocumento**: Tipo de documento (CC, CE, TI, etc.)
-    - **NumeroDocumento**: Número de documento (único)
-    - **Nombres**: Nombres del paciente
-    - **Apellidos**: Apellidos del paciente
-    - **FechaNacimiento**: Fecha de nacimiento (YYYY-MM-DD)
-    - **Sexo**: Sexo (M, F, Otro)
+    El archivo Excel debe contener las siguientes columnas (en minúsculas):
+    - **tipo_documento**: Tipo de documento (CC, CE, TI, PA)
+    - **documento**: Número de documento (único, no se permiten duplicados)
+    - **nombre_completo**: Nombre completo del paciente
+    - **fecha_nacimiento**: Fecha de nacimiento (YYYY-MM-DD)
+    - **genero**: Género (Masculino, Femenino, Otro)
+    - **telefono**: Teléfono de contacto
+    - **eps_codigo**: Código de la EPS
+    - **eps_nombre**: Nombre de la EPS
+    - **prioridad**: Prioridad (Alta, Media, Baja)
+    - **estado**: Estado (Pendiente, En atención, Atendido)
     
     Columnas opcionales:
-    - **Telefono**: Número de teléfono
-    - **Correo**: Correo electrónico
-    - **Direccion**: Dirección de residencia
-    - **Estado**: Estado del paciente (True/False, por defecto True)
+    - **correo**: Correo electrónico (debe terminar en @example.test)
+    - **ciudad**: Ciudad de residencia
+    
+    Columnas ignoradas (generadas por la BD):
+    - **paciente_id**, **fecha_creacion**, **fecha_actualizacion**
+    
+    No se permiten documentos duplicados: si un documento ya existe en la BD
+    o está repetido dentro del mismo archivo, el registro se omite.
     
     Retorna un resumen con:
     - Total de registros procesados

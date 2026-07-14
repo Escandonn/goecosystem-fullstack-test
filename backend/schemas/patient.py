@@ -50,7 +50,7 @@ class PatientBase(BaseModel):
     @classmethod
     def validate_genero(cls, v: str) -> str:
         v = v.strip().capitalize()
-        if v not in ("Masculino", "Femenino", "Otro"):
+        if v not in ("Masculino", "Femenino", "Prefiere no informar"):
             raise ValueError("El género debe ser 'Masculino', 'Femenino' u 'Otro'")
         return v
 

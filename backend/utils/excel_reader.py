@@ -14,23 +14,31 @@ class ExcelReaderError(Exception):
 class ExcelReader:
     """Lee archivos Excel y los convierte a lista de diccionarios."""
 
-    # Columnas esperadas en el Excel
+    # Columnas requeridas en el Excel (datos necesarios para crear un paciente)
     REQUIRED_COLUMNS = [
-        "TipoDocumento",
-        "Documento",
-        "NombreCompleto",
-        "FechaNacimiento",
-        "Genero",
-        "Telefono",
-        "EpsCodigo",
-        "EpsNombre",
-        "Prioridad",
-        "Estado",
+        "tipo_documento",
+        "documento",
+        "nombre_completo",
+        "fecha_nacimiento",
+        "genero",
+        "telefono",
+        "eps_codigo",
+        "eps_nombre",
+        "prioridad",
+        "estado",
     ]
 
+    # Columnas opcionales (datos de contacto adicionales)
     OPTIONAL_COLUMNS = [
-        "Correo",
-        "Ciudad",
+        "correo",
+        "ciudad",
+    ]
+
+    # Columnas que se ignoran porque son generadas por la BD
+    IGNORED_COLUMNS = [
+        "paciente_id",
+        "fecha_creacion",
+        "fecha_actualizacion",
     ]
 
     ALL_COLUMNS = REQUIRED_COLUMNS + OPTIONAL_COLUMNS
@@ -86,7 +94,7 @@ class ExcelReader:
 
     def _validate_columns(self, columns: List[str]) -> None:
         """Valida que estén presentes las columnas requeridas."""
-        # Normalizar columnas del Excel
+        # Normalizar columnas del Excel (minúsculas, sin espacios)
         normalized_columns = {col.strip().lower(): col for col in columns}
         
         missing_columns = []
@@ -120,11 +128,11 @@ class ExcelReader:
 
     def _normalize_record(self, record: Dict[str, Any], row_num: int) -> Dict[str, Any]:
         """Normaliza un registro individual."""
-        # Crear mapping de columnas normalizadas
+        # Crear mapping de columnas normalizadas (minúsculas, sin espacios)
         columns_map = {col.strip().lower(): col for col in record.keys()}
         
         def get_value(std_name: str, default=None):
-            """Obtiene el valor de una columna por su nombre estándar."""
+            """Obtiene el valor de una columna por su nombre estándar (en minúsculas)."""
             normalized = std_name.lower()
             if normalized in columns_map:
                 val = record.get(columns_map[normalized])
@@ -134,29 +142,29 @@ class ExcelReader:
             return default
         
         # Extraer y normalizar valores
-        tipo_doc = get_value("TipoDocumento", "").strip().upper() if get_value("TipoDocumento") else None
-        documento = str(get_value("Documento", "")).strip() if get_value("Documento") else None
+        tipo_doc = get_value("tipo_documento", "").strip().upper() if get_value("tipo_documento") else None
+        documento = str(get_value("documento", "")).strip() if get_value("documento") else None
         if documento and documento.endswith(".0"):
             documento = documento[:-2]
             
-        nombre_completo = get_value("NombreCompleto", "").strip() if get_value("NombreCompleto") else None
-        fecha_nac = get_value("FechaNacimiento")
-        genero = get_value("Genero", "").strip() if get_value("Genero") else None
+        nombre_completo = get_value("nombre_completo", "").strip() if get_value("nombre_completo") else None
+        fecha_nac = get_value("fecha_nacimiento")
+        genero = get_value("genero", "").strip() if get_value("genero") else None
         
-        telefono = str(get_value("Telefono", "")).strip() if get_value("Telefono") else None
+        telefono = str(get_value("telefono", "")).strip() if get_value("telefono") else None
         if telefono and telefono.endswith(".0"):
             telefono = telefono[:-2]
             
-        correo = get_value("Correo", "").strip().lower() if get_value("Correo") else None
+        correo = get_value("correo", "").strip().lower() if get_value("correo") else None
         
-        eps_codigo = str(get_value("EpsCodigo", "")).strip() if get_value("EpsCodigo") else None
+        eps_codigo = str(get_value("eps_codigo", "")).strip() if get_value("eps_codigo") else None
         if eps_codigo and eps_codigo.endswith(".0"):
             eps_codigo = eps_codigo[:-2]
             
-        eps_nombre = get_value("EpsNombre", "").strip() if get_value("EpsNombre") else None
-        ciudad = get_value("Ciudad", "").strip() if get_value("Ciudad") else None
-        prioridad = get_value("Prioridad", "").strip() if get_value("Prioridad") else None
-        estado = get_value("Estado", "").strip() if get_value("Estado") else None
+        eps_nombre = get_value("eps_nombre", "").strip() if get_value("eps_nombre") else None
+        ciudad = get_value("ciudad", "").strip() if get_value("ciudad") else None
+        prioridad = get_value("prioridad", "").strip() if get_value("prioridad") else None
+        estado = get_value("estado", "").strip() if get_value("estado") else None
         
         # Normalizar fecha
         if isinstance(fecha_nac, str):
