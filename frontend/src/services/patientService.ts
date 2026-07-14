@@ -39,11 +39,11 @@ export const patientService = {
   },
 
   /**
-   * GET /pacientes/{id}
+   * GET /pacientes/{paciente_id}
    * Obtiene un paciente por su ID.
    */
-  async getById(id: number): Promise<Patient> {
-    const response = await api.get<Patient>(`/pacientes/${id}`);
+  async getById(paciente_id: number): Promise<Patient> {
+    const response = await api.get<Patient>(`/pacientes/${paciente_id}`);
     return response.data;
   },
 
@@ -57,19 +57,19 @@ export const patientService = {
   },
 
   /**
-   * PUT /pacientes/{id}
+   * PUT /pacientes/{paciente_id}
    * Actualiza los campos enviados de un paciente existente.
    */
-  async update(id: number, data: PatientUpdate): Promise<Patient> {
-    const response = await api.put<Patient>(`/pacientes/${id}`, data);
+  async update(paciente_id: number, data: PatientUpdate): Promise<Patient> {
+    const response = await api.put<Patient>(`/pacientes/${paciente_id}`, data);
     return response.data;
   },
 
   /**
-   * DELETE /pacientes/{id}
+   * DELETE /pacientes/{paciente_id}
    * Elimina un paciente (solo admin). Retorna 204 sin contenido.
    */
-  async delete(id: number): Promise<void> {
-    await api.delete(`/pacientes/${id}`);
+  async delete(paciente_id: number): Promise<void> {
+    await api.delete(`/pacientes/${paciente_id}`);
   },
 };

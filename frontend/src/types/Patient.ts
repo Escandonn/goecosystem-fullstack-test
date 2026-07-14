@@ -1,51 +1,61 @@
 /**
  * Tipo de documento de identidad aceptado por el backend.
  */
-export type TipoDocumento = "CC" | "CE" | "TI" | "PA";
+export type TipoDocumento = "CC" | "TI" | "CE" | "PA";
 
 /**
- * Sexo biológico del paciente.
+ * Género del paciente.
  */
-export type Sexo = "M" | "F";
+export type Genero = "Masculino" | "Femenino" | "No binario" | "Prefiere no responder";
+
+/**
+ * Nivel de prioridad del paciente.
+ */
+export type Prioridad = "Alta" | "Media" | "Baja";
 
 /**
  * Estado del paciente en el sistema.
  */
-export type EstadoPaciente = "Activo" | "Inactivo";
+export type EstadoPaciente = "Pendiente" | "En atención" | "Atendido";
 
 /**
  * Modelo completo de paciente tal como lo devuelve el backend (PatientResponse).
+ * 15 campos según el nuevo modelo del backend.
  */
 export interface Patient {
-  id: number;
+  paciente_id: number;
   tipo_documento: TipoDocumento;
-  numero_documento: string;
-  nombres: string;
-  apellidos: string;
+  documento: string;
+  nombre_completo: string;
   fecha_nacimiento: string; // ISO date "YYYY-MM-DD"
-  sexo: Sexo;
+  genero: Genero;
   telefono: string;
-  correo: string;
-  direccion: string;
+  correo: string | null;
+  eps_codigo: string;
+  eps_nombre: string;
+  ciudad: string | null;
+  prioridad: Prioridad;
   estado: EstadoPaciente;
-  fecha_creacion: string;   // ISO datetime
+  fecha_creacion: string;      // ISO datetime
   fecha_actualizacion: string; // ISO datetime
 }
 
 /**
  * Payload para crear un paciente (PatientCreate).
- * Todos los campos son requeridos excepto los que el backend genera.
+ * Campos requeridos por el backend; opcionales marcados con ?.
  */
 export interface PatientCreate {
   tipo_documento: TipoDocumento;
-  numero_documento: string;
-  nombres: string;
-  apellidos: string;
+  documento: string;
+  nombre_completo: string;
   fecha_nacimiento: string;
-  sexo: Sexo;
+  genero: Genero;
   telefono: string;
-  correo: string;
-  direccion: string;
+  correo?: string;
+  eps_codigo: string;
+  eps_nombre: string;
+  ciudad?: string;
+  prioridad: Prioridad;
   estado: EstadoPaciente;
 }
 
@@ -55,13 +65,15 @@ export interface PatientCreate {
  */
 export interface PatientUpdate {
   tipo_documento?: TipoDocumento;
-  numero_documento?: string;
-  nombres?: string;
-  apellidos?: string;
+  documento?: string;
+  nombre_completo?: string;
   fecha_nacimiento?: string;
-  sexo?: Sexo;
+  genero?: Genero;
   telefono?: string;
-  correo?: string;
-  direccion?: string;
+  correo?: string | null;
+  eps_codigo?: string;
+  eps_nombre?: string;
+  ciudad?: string | null;
+  prioridad?: Prioridad;
   estado?: EstadoPaciente;
 }
