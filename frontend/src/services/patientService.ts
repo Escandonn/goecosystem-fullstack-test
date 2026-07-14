@@ -11,7 +11,7 @@ export const patientService = {
    * GET /pacientes?skip=&limit=
    * Obtiene la lista paginada de todos los pacientes.
    */
-  async getAll(skip = 0, limit = 100): Promise<Patient[]> {
+  async getAll(skip = 0, limit = 10): Promise<Patient[]> {
     const response = await api.get<Patient[]>("/pacientes", {
       params: { skip, limit },
     });

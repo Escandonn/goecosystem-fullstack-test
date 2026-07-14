@@ -13,7 +13,7 @@ class PatientBase(BaseModel):
     documento: str = Field(..., max_length=20, description="Número de documento único")
     nombre_completo: str = Field(..., max_length=150, description="Nombre completo del paciente")
     fecha_nacimiento: date = Field(..., description="Fecha de nacimiento en formato YYYY-MM-DD")
-    genero: str = Field(..., max_length=30, description="Género del paciente (Masculino, Femenino, Otro)")
+    genero: str = Field(..., max_length=30, description="Género del paciente (Masculino, Femenino, No binario, Prefiere no responder)")
     telefono: str = Field(..., max_length=20, description="Teléfono de contacto")
     correo: Optional[str] = Field(None, description="Correo electrónico con dominio example.test")
     eps_codigo: str = Field(..., max_length=10, description="Código de la EPS")
@@ -50,8 +50,8 @@ class PatientBase(BaseModel):
     @classmethod
     def validate_genero(cls, v: str) -> str:
         v = v.strip().capitalize()
-        if v not in ("Masculino", "Femenino", "Prefiere no informar"):
-            raise ValueError("El género debe ser 'Masculino', 'Femenino' u 'Otro'")
+        if v not in ("Masculino", "Femenino", "No binario", "Prefiere no responder"):
+            raise ValueError("El género debe ser 'Masculino', 'Femenino', 'No binario' o 'Prefiere no responder'")
         return v
 
     @field_validator("prioridad")
@@ -141,8 +141,8 @@ class PatientUpdate(BaseModel):
         if v is None:
             return v
         v = v.strip().capitalize()
-        if v not in ("Masculino", "Femenino", "Otro"):
-            raise ValueError("El género debe ser 'Masculino', 'Femenino' u 'Otro'")
+        if v not in ("Masculino", "Femenino", "No binario", "Prefiere no responder"):
+            raise ValueError("El género debe ser 'Masculino', 'Femenino', 'No binario' o 'Prefiere no responder'")
         return v
 
     @field_validator("prioridad")
