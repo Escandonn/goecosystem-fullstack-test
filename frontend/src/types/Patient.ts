@@ -6,7 +6,7 @@ export type TipoDocumento = "CC" | "TI" | "CE" | "PA";
 /**
  * Género del paciente.
  */
-export type Genero = "Masculino" | "Femenino" | "No binario" | "Prefiere no responder";
+export type Genero = "Masculino" | "Femenino"  | "Prefiere no informar";
 
 /**
  * Nivel de prioridad del paciente.
